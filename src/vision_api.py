@@ -120,7 +120,7 @@ class ClaudeVisionAPI(VisionAPIBase):
 
         message = client.messages.create(
             model=self.model,
-            max_tokens=4096,
+            max_tokens=8192,
             temperature=0,  # 일관된 결과를 위해 0으로 설정
             messages=[
                 {
@@ -206,7 +206,7 @@ class OpenAIVisionAPI(VisionAPIBase):
 
         response = client.chat.completions.create(
             model=self.model,
-            max_tokens=4096,
+            max_tokens=8192,
             temperature=0,  # 일관된 결과를 위해 0으로 설정
             messages=[
                 {
