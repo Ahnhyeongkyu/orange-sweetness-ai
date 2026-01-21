@@ -1,5 +1,5 @@
 """
-오렌지 당도 추정 AI - Streamlit 앱
+Orange Sweetness Estimation AI - Streamlit App
 """
 
 import streamlit as st
@@ -10,14 +10,14 @@ from src.vision_api import get_vision_api
 from src.orange_analyzer import OrangeAnalyzer, OrangeAnalysisResult
 
 
-# 페이지 설정
+# Page config
 st.set_page_config(
-    page_title="오렌지 당도 추정 AI",
+    page_title="Orange Sweetness AI",
     page_icon="🍊",
     layout="centered"
 )
 
-# 커스텀 CSS
+# Custom CSS
 st.markdown("""
 <style>
     .main-title {
@@ -95,30 +95,38 @@ st.markdown("""
 
 
 def get_rank_emoji(rank: int) -> str:
-    """순위에 따른 이모지 반환"""
+    """Return emoji based on rank"""
     rank_emojis = {1: "🥇", 2: "🥈", 3: "🥉"}
-    return rank_emojis.get(rank, f"{rank}위")
+    return rank_emojis.get(rank, f"#{rank}")
 
 
 def get_grade_class(grade: str) -> str:
-    """등급에 따른 CSS 클래스 반환"""
-    grade_map = {"높음": "grade-high", "중간": "grade-medium", "낮음": "grade-low"}
+    """Return CSS class based on grade"""
+    grade_map = {"높음": "grade-high", "중간": "grade-medium", "낮음": "grade-low",
+                 "High": "grade-high", "Medium": "grade-medium", "Low": "grade-low"}
     return grade_map.get(grade, "grade-medium")
 
 
+def translate_grade(grade: str) -> str:
+    """Translate Korean grade to English"""
+    translations = {"높음": "High", "중간": "Medium", "낮음": "Low"}
+    return translations.get(grade, grade)
+
+
 def display_single_result(result: OrangeAnalysisResult, image=None, rank: int = None, total: int = 1):
-    """단일 분석 결과 표시"""
+    """Display single analysis result"""
 
     if not result.is_orange:
-        st.error(result.error_message or "오렌지가 아닌 이미지입니다.")
+        st.error(result.error_message or "This image does not appear to be an orange.")
         return
 
     grade_class = get_grade_class(result.sweetness_grade)
+    display_grade = translate_grade(result.sweetness_grade)
 
-    # 순위 표시 (다중 이미지일 때만)
+    # Rank display (only for multiple images)
     if rank and total > 1:
         if rank == 1:
-            st.markdown('<div class="winner-banner">🏆 가장 달 것으로 예상! 🏆</div>', unsafe_allow_html=True)
+            st.markdown('<div class="winner-banner">🏆 Expected Sweetest! 🏆</div>', unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 2])
 
@@ -132,166 +140,166 @@ def display_single_result(result: OrangeAnalysisResult, image=None, rank: int = 
     with col2:
         st.markdown(f"""
         <div class="{grade_class}">
-            <div style="font-size: 14px; margin-bottom: 5px;">당도 등급</div>
-            <div style="font-size: 32px; font-weight: bold;">{result.sweetness_grade}</div>
-            <div style="font-size: 24px; margin-top: 10px;">예상 Brix: {result.brix_range}</div>
+            <div style="font-size: 14px; margin-bottom: 5px;">Sweetness Grade</div>
+            <div style="font-size: 32px; font-weight: bold;">{display_grade}</div>
+            <div style="font-size: 24px; margin-top: 10px;">Est. Brix: {result.brix_range}</div>
         </div>
         """, unsafe_allow_html=True)
 
-        # 점수 표시
+        # Score display
         if result.sweetness_score:
             st.markdown(f"""
             <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                <span style="font-size: 14px;">당도 점수:</span>
-                <span style="font-size: 28px; font-weight: bold; color: #FF6B35;"> {result.sweetness_score}점</span>
+                <span style="font-size: 14px;">Sweetness Score:</span>
+                <span style="font-size: 28px; font-weight: bold; color: #FF6B35;"> {result.sweetness_score}</span>
                 <span style="font-size: 12px; color: #888;"> / 100</span>
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown(f"**신뢰도:** {result.confidence_score}%")
+        st.markdown(f"**Confidence:** {result.confidence_score}%")
 
-    # 상세 분석
-    with st.expander("📊 상세 분석 보기", expanded=(rank == 1 if rank else True)):
+    # Detailed analysis
+    with st.expander("📊 View Detailed Analysis", expanded=(rank == 1 if rank else True)):
         col_a, col_b, col_c = st.columns(3)
         with col_a:
-            st.markdown("**🎨 색상**")
+            st.markdown("**🎨 Color**")
             st.caption(result.color_analysis)
         with col_b:
-            st.markdown("**✨ 표면**")
+            st.markdown("**✨ Surface**")
             st.caption(result.surface_analysis)
         with col_c:
-            st.markdown("**🍊 숙성도**")
+            st.markdown("**🍊 Ripeness**")
             st.caption(result.ripeness_analysis)
 
         st.markdown("---")
-        st.markdown(f"**💡 종합 판단:** {result.analysis_reason}")
+        st.markdown(f"**💡 Summary:** {result.analysis_reason}")
 
 
 def main():
-    # 헤더
-    st.markdown("<h1 class='main-title'>🍊 오렌지 당도 추정 AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='subtitle'>오렌지 사진을 업로드하면 외관을 AI로 분석하여 당도를 추정합니다</p>", unsafe_allow_html=True)
+    # Header
+    st.markdown("<h1 class='main-title'>🍊 Orange Sweetness AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='subtitle'>Upload orange photos and AI will analyze appearance to estimate sweetness</p>", unsafe_allow_html=True)
 
-    # 사이드바 - API 설정
+    # Sidebar - API settings
     with st.sidebar:
-        st.header("⚙️ API 설정")
+        st.header("⚙️ API Settings")
 
         api_provider = st.selectbox(
-            "AI 모델 선택",
+            "Select AI Model",
             options=["openai", "claude"],
-            format_func=lambda x: "GPT-4o (OpenAI) - 추천" if x == "openai" else "Claude (Anthropic)"
+            format_func=lambda x: "GPT-4o (OpenAI) - Recommended" if x == "openai" else "Claude (Anthropic)"
         )
 
         api_key = st.text_input(
-            "API Key 입력",
+            "Enter API Key",
             type="password",
-            help="선택한 AI 서비스의 API 키를 입력하세요."
+            help="Enter your API key for the selected AI service."
         )
 
-        # API 키 발급 안내
-        with st.expander("🔑 API 키 발급 방법"):
+        # API key guide
+        with st.expander("🔑 How to Get API Key"):
             if api_provider == "claude":
                 st.markdown("""
                 **Anthropic (Claude)**
-                1. [console.anthropic.com](https://console.anthropic.com/) 접속
-                2. 회원가입 또는 로그인
-                3. API Keys 메뉴 → 새 키 생성
-                4. 크레딧 충전 필요 (최소 $5)
+                1. Visit [console.anthropic.com](https://console.anthropic.com/)
+                2. Sign up or log in
+                3. Go to API Keys → Create new key
+                4. Add credits (minimum $5)
                 """)
             else:
                 st.markdown("""
                 **OpenAI (GPT-4)**
-                1. [platform.openai.com](https://platform.openai.com/) 접속
-                2. 회원가입 또는 로그인
-                3. API Keys 메뉴 → 새 키 생성
-                4. 크레딧 충전 필요
+                1. Visit [platform.openai.com](https://platform.openai.com/)
+                2. Sign up or log in
+                3. Go to API Keys → Create new key
+                4. Add credits
                 """)
 
         st.divider()
 
-        # 사용 안내
-        st.header("📖 사용 방법")
+        # Usage guide
+        st.header("📖 How to Use")
         st.markdown("""
-        1. API 키 입력
-        2. 오렌지 사진 업로드 (최대 5장)
-        3. '분석하기' 클릭
-        4. 결과 확인!
+        1. Enter API key
+        2. Upload orange photos (up to 5)
+        3. Click 'Analyze'
+        4. View results!
 
-        **여러 장 업로드 시**
-        AI가 직접 비교하여 가장 달 것으로 예상되는 순서대로 순위를 매깁니다.
+        **Multiple Images**
+        AI will compare all images and rank them by expected sweetness.
         """)
 
         st.divider()
         st.caption("""
-        ⚠️ **주의사항**
-        - 외관 기반 상대적 추정입니다
-        - 실제 당도와 차이가 있을 수 있습니다
-        - 조명/각도에 따라 결과가 달라질 수 있습니다
+        ⚠️ **Note**
+        - This is a visual estimation
+        - Actual sweetness may vary
+        - Results depend on lighting/angle
         """)
 
-    # 메인 영역 - 이미지 업로드
-    st.subheader("📤 오렌지 사진 업로드")
+    # Main area - Image upload
+    st.subheader("📤 Upload Orange Photos")
 
     uploaded_files = st.file_uploader(
-        "이미지를 선택하세요 (최대 5장)",
+        "Select images (up to 5)",
         type=["jpg", "jpeg", "png", "webp"],
         accept_multiple_files=True,
-        help="JPG, PNG, WEBP 형식 지원. 10MB 이하 권장."
+        help="Supports JPG, PNG, WEBP. Under 10MB recommended."
     )
 
-    # 업로드된 파일 수 제한
+    # Limit uploaded files
     if uploaded_files and len(uploaded_files) > 5:
-        st.warning("⚠️ 최대 5장까지 업로드 가능합니다. 처음 5장만 분석합니다.")
+        st.warning("⚠️ Maximum 5 images allowed. Only first 5 will be analyzed.")
         uploaded_files = uploaded_files[:5]
 
-    # 업로드된 이미지 미리보기
+    # Preview uploaded images
     if uploaded_files:
-        st.markdown(f"**업로드된 이미지: {len(uploaded_files)}장**")
+        st.markdown(f"**Uploaded: {len(uploaded_files)} image(s)**")
         cols = st.columns(min(len(uploaded_files), 5))
         for idx, (col, file) in enumerate(zip(cols, uploaded_files)):
             with col:
                 img = Image.open(file)
                 st.image(img, caption=f"#{idx+1}", use_container_width=True)
 
-    # 분석 버튼
+    # Analyze button
     st.divider()
 
     col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
     with col_btn2:
         analyze_btn = st.button(
-            "🔍 분석하기",
+            "🔍 Analyze",
             type="primary",
             use_container_width=True,
             disabled=not (api_key and uploaded_files)
         )
 
     if not api_key:
-        st.info("👈 사이드바에서 API 키를 입력해주세요.")
+        st.info("👈 Please enter your API key in the sidebar.")
     elif not uploaded_files:
-        st.info("📤 오렌지 사진을 업로드해주세요.")
+        st.info("📤 Please upload orange photos.")
 
-    # 분석 실행
+    # Run analysis
     if analyze_btn and api_key and uploaded_files:
         try:
-            # Vision API 초기화
+            # Initialize Vision API
             vision_api = get_vision_api(api_provider, api_key)
             analyzer = OrangeAnalyzer(vision_api)
 
-            with st.spinner("🍊 AI가 오렌지를 분석하고 있습니다..."):
+            with st.spinner("🍊 AI is analyzing the oranges..."):
                 if len(uploaded_files) == 1:
-                    # 단일 이미지 분석
+                    # Single image analysis
                     file = uploaded_files[0]
                     file.seek(0)
                     image_data = file.read()
                     result = analyzer.analyze(image_data)
 
-                    st.subheader("📋 분석 결과")
+                    st.subheader("📋 Analysis Result")
                     file.seek(0)
                     img = Image.open(file)
                     display_single_result(result, image=img)
 
                 else:
-                    # 다중 이미지 비교 분석
+                    # Multiple image comparison
                     images = []
                     image_objects = {}
 
@@ -305,8 +313,8 @@ def main():
 
                     results = analyzer.analyze_multiple(images)
 
-                    st.subheader("🏆 분석 결과 (당도 높은 순)")
-                    st.markdown("AI가 모든 이미지를 직접 비교하여 순위를 매겼습니다.")
+                    st.subheader("🏆 Results (Ranked by Sweetness)")
+                    st.markdown("AI compared all images and ranked them.")
 
                     for filename, result in results:
                         st.markdown("---")
@@ -320,18 +328,18 @@ def main():
         except Exception as e:
             error_msg = str(e)
             if "credit" in error_msg.lower() or "balance" in error_msg.lower():
-                st.error("❌ API 크레딧이 부족합니다. API 제공사 웹사이트에서 크레딧을 충전해주세요.")
+                st.error("❌ Insufficient API credits. Please add credits on your API provider's website.")
             elif "api_key" in error_msg.lower() or "invalid" in error_msg.lower():
-                st.error("❌ API 키가 올바르지 않습니다. 다시 확인해주세요.")
+                st.error("❌ Invalid API key. Please check and try again.")
             else:
-                st.error(f"❌ 오류가 발생했습니다: {error_msg}")
+                st.error(f"❌ An error occurred: {error_msg}")
 
-    # 푸터
+    # Footer
     st.divider()
     st.markdown("""
     <div class='disclaimer'>
-    이 서비스는 오렌지의 외관을 AI로 분석하여 당도를 <b>추정</b>합니다.<br>
-    실제 당도 측정과는 차이가 있을 수 있으며, <b>참고용</b>으로만 사용해주세요.
+    This service uses AI to <b>estimate</b> orange sweetness based on appearance.<br>
+    Actual sweetness may differ. For <b>reference only</b>.
     </div>
     """, unsafe_allow_html=True)
 
