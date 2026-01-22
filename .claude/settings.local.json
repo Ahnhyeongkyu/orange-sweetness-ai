@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python3:*)",
+      "Bash(source venv/bin/activate)",
+      "Bash(gh auth status:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: 오렌지 당도 추정 AI\n\n- Vision API 연동 (Claude/OpenAI)\n- 오렌지 외관 분석 + 당도 추정 로직\n- Streamlit UI (다중 이미지 비교, 순위 표시)\n- temperature=0 설정으로 일관된 결과\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "Bash(sudo apt update:*)",
+      "Bash(sudo apt install:*)",
+      "WebFetch(domain:orange-sweetness-ai-y4swdqp9jnqdwxd4iuycsy.streamlit.app)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: 다중 이미지 분석 토큰 한도 증가 (4096→8192)\n\n- 5장 이미지 분석 시 응답 잘림 방지\n- Claude/OpenAI 모두 적용\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(zip:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
